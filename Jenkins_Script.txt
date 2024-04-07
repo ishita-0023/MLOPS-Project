@@ -1,0 +1,33 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Build') {
+            steps {
+                git 'https://github.com/DevanshPrashar/MLOPS.git'
+
+                script {
+                    docker.build("devansh6252/price_detection")
+                }
+            }
+        }
+        stage('Deploy') {
+            steps {
+                script {
+                   docker.image("devansh6252/price_detection").run("-p 4001:3000 --name price_detection_container_1")
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            // Cleanup
+            script {
+                docker.image("devansh6252/price_detection").remove()
+                docker.container("price_detection_container_1").stop()
+                docker.container("price_detection_container_1").remove()
+            }
+        }
+    }
+}
